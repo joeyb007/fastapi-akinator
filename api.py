@@ -1,7 +1,8 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
-from transformers import pipeline
+import requests
 from fastapi.middleware.cors import CORSMiddleware
+import os
 
 
 
@@ -14,7 +15,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-chat_model = pipeline("text-generation", model="gpt2") 
+HF_API_URL = "https://api-inference.huggingface.co/models/google/flan-t5-small"
+HF_API_KEY = os.getenv("HF_API_KEY")
+
 
 class Question(BaseModel):
     question: str 
