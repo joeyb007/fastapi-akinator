@@ -35,9 +35,25 @@ def guess_answer(g: Guess):
 
 @app.post("/ask")
 def ask_question(q: Question):
-    question_text = q.question.lower()
     prompt = f"Answer ONLY yes or no to this question about a radio: {q.question}"
-    model_out = chat_model(prompt, max_length=50)[0]['generated_text']
-    response = "Yes" if "yes" in model_out.lower() else "No"
 
-    return {"response": response}
+    headers = {
+        "Authorization": f"Bearer {HF_API_KEY}",
+        "Content-Type": "application/json"
+    }
+
+    payload = {
+        "inputs": prompt,
+        "parameters": {"max_new_tokens": 50}
+    }
+
+    response = requests.post(HF_API_URL, headers=headers, json=payload)
+    
+    if response.status_code != 200:
+        return {"response": "Error contacting model API"}
+
+    model_out = response.json()
+    generated_text = model_out[0]["generated_text"]
+
+    answer = "Yes" if "yes" in generated_text.lower() else "No"
+    return {"response": answer}
